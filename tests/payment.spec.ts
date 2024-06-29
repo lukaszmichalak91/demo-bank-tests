@@ -21,23 +21,33 @@ test.describe('Payment tests', () => {
     paymentPage = new PaymentPage(page);
   });
 
-  test('simple payment', async ({ page }) => {
-    // Arrange
-    const transferReceiver = 'Jan Nowak';
-    const transferAccount = '12 3456 1234 5612 3456 1234 567';
-    const transferAmount = '220';
-    const transferTitle = 'za pizze';
-    const expectedMessage = `Przelew wykonany! ${transferAmount},00PLN dla ${transferReceiver}`;
+  test(
+    'simple payment',
+    {
+      tag: ['@payment', '@integration'],
+      annotation: {
+        type: 'documentation',
+        description: 'https://github.com/lukaszmichalak91/demo-bank-tests',
+      },
+    },
+    async ({ page }) => {
+      // Arrange
+      const transferReceiver = 'Jan Nowak';
+      const transferAccount = '12 3456 1234 5612 3456 1234 567';
+      const transferAmount = '220';
+      const transferTitle = 'za pizze';
+      const expectedMessage = `Przelew wykonany! ${transferAmount},00PLN dla ${transferReceiver}`;
 
-    // Act
-    await paymentPage.makeTransfer(
-      transferReceiver,
-      transferAccount,
-      transferAmount,
-      transferTitle,
-    );
+      // Act
+      await paymentPage.makeTransfer(
+        transferReceiver,
+        transferAccount,
+        transferAmount,
+        transferTitle,
+      );
 
-    //Assert
-    await expect(paymentPage.actionMessage).toHaveText(expectedMessage);
-  });
+      //Assert
+      await expect(paymentPage.actionMessage).toHaveText(expectedMessage);
+    },
+  );
 });

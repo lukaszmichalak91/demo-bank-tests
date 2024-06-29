@@ -17,63 +17,72 @@ test.describe('Pulpit tests', () => {
     pulpitPage = new PulpitPage(page);
   });
 
-  test('quick payment with correct data', async ({ page }) => {
-    // Arrange
-    const receiverId = '2';
-    const transferAmount = '150';
-    const transferTitle = 'pizza';
-    const expectedTransferReceiver = 'Chuck Demobankowy';
+  test(
+    'quick payment with correct data',
+    {
+      tag: ['@pulpit', '@integration'],
+      annotation: {
+        type: 'documentation',
+        description: 'https://github.com/lukaszmichalak91/demo-bank-tests',
+      },
+    },
+    async ({ page }) => {
+      // Arrange
+      const receiverId = '2';
+      const transferAmount = '150';
+      const transferTitle = 'pizza';
+      const expectedTransferReceiver = 'Chuck Demobankowy';
 
-    // Act
-    await pulpitPage.transferReceiverDropdown.selectOption(receiverId);
-    await pulpitPage.transferAmountInput.fill(transferAmount);
-    await pulpitPage.transferTitleInput.fill(transferTitle);
+      // Act
+      await pulpitPage.executeQuickPayment(
+        receiverId,
+        transferAmount,
+        transferTitle,
+      );
 
-    await pulpitPage.executeTransferButton.click();
-    await pulpitPage.closeConfirmationBox.click();
+      // Assert
+      await expect(pulpitPage.actionMessage).toHaveText(
+        `Przelew wykonany! ${expectedTransferReceiver} - ${transferAmount},00PLN - ${transferTitle}`,
+      );
+    },
+  );
 
-    // Assert
-    await expect(pulpitPage.actionMessage).toHaveText(
-      `Przelew wykonany! ${expectedTransferReceiver} - ${transferAmount},00PLN - ${transferTitle}`,
-    );
-  });
+  test(
+    'successful mobile top-up',
+    { tag: ['@pulpit', '@integration'] },
+    async ({ page }) => {
+      // Arrange
+      const topUpReceiver = '500 xxx xxx';
+      const topUpAmount = '50';
+      const expectedSuccessfulTopUpMessage = `Doładowanie wykonane! ${topUpAmount},00PLN na numer ${topUpReceiver}`;
 
-  test('successful mobile top-up', async ({ page }) => {
-    // Arrange
-    const topUpReceiver = '500 xxx xxx';
-    const topUpAmount = '50';
-    const expectedSuccessfulTopUpMessage = `Doładowanie wykonane! ${topUpAmount},00PLN na numer ${topUpReceiver}`;
+      // Act
+      await pulpitPage.executeMobileTopUp(topUpReceiver, topUpAmount);
 
-    // Act
-    await pulpitPage.topUpReceiverDropdown.selectOption(topUpReceiver);
-    await pulpitPage.topUpAmountInput.fill(topUpAmount);
+      // Assert
+      await expect(pulpitPage.actionMessage).toHaveText(
+        expectedSuccessfulTopUpMessage,
+      );
+    },
+  );
 
-    await pulpitPage.regulationsCheckbox.check();
-    await pulpitPage.executeTopUpButton.click();
-    await pulpitPage.closeConfirmationBox.click();
+  test(
+    'correct balance after successful mobile top-up',
+    { tag: ['@pulpit', '@integration'] },
+    async ({ page }) => {
+      // Arrange
+      const topUpReceiver = '500 xxx xxx';
+      const topUpAmount = '50';
+      const initialBalance = await pulpitPage.moneyBalanceLabel.innerText();
+      const expectedBalance = Number(initialBalance) - Number(topUpAmount);
 
-    // Assert
-    await expect(pulpitPage.actionMessage).toHaveText(
-      expectedSuccessfulTopUpMessage,
-    );
-  });
+      // Act
+      await pulpitPage.executeMobileTopUp(topUpReceiver, topUpAmount);
 
-  test('correct balance after successful mobile top-up', async ({ page }) => {
-    // Arrange
-    const topUpReceiver = '500 xxx xxx';
-    const topUpAmount = '50';
-    const initialBalance = await pulpitPage.moneyBalanceLabel.innerText();
-    const expectedBalance = Number(initialBalance) - Number(topUpAmount);
-
-    // Act
-
-    await pulpitPage.topUpReceiverDropdown.selectOption(topUpReceiver);
-    await pulpitPage.topUpAmountInput.fill(topUpAmount);
-
-    await pulpitPage.regulationsCheckbox.click();
-    await pulpitPage.executeTopUpButton.click();
-    await pulpitPage.closeConfirmationBox.click();
-    // Assert
-    await expect(pulpitPage.moneyBalanceLabel).toHaveText(`${expectedBalance}`);
-  });
+      // Assert
+      await expect(pulpitPage.moneyBalanceLabel).toHaveText(
+        `${expectedBalance}`,
+      );
+    },
+  );
 });
