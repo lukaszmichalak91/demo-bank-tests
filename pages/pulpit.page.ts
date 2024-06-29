@@ -1,7 +1,10 @@
 import { Page } from '@playwright/test';
+import { SideMenuComponent } from '../componenets/side-menu.component';
 
 export class PulpitPage {
   constructor(private page: Page) {}
+
+  sideMenu = new SideMenuComponent(this.page)
 
   transferReceiverDropdown = this.page.locator('#widget_1_transfer_receiver');
   transferAmountInput = this.page.locator('#widget_1_transfer_amount');
