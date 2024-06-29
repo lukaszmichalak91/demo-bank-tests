@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { loginData } from '../test-data/login.data';
 import { LoginPage } from '../pages/login.page';
+import { PulpitPage } from '../pages/pulpit.page';
 
 test.describe('User login to Demobank', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,7 +10,6 @@ test.describe('User login to Demobank', () => {
 
   test('successful login with correct credentials', async ({ page }) => {
     // Arrange
-
     const userId = loginData.userId;
     const userPassword = loginData.userPassword;
     const expectedUserName = 'Jan Demobankowy';
@@ -19,9 +19,10 @@ test.describe('User login to Demobank', () => {
     await loginPage.loginInput.fill(userId);
     await loginPage.passwordInput.fill(userPassword);
     await loginPage.loginButton.click();
+    const pulpitPage = new PulpitPage(page);
 
     // Assert
-    await expect(page.getByTestId('user-name')).toHaveText(expectedUserName);
+    await expect(pulpitPage.userTextName).toHaveText(expectedUserName);
   });
 
   test('unsuccessful login with too short username', async ({ page }) => {
@@ -30,13 +31,12 @@ test.describe('User login to Demobank', () => {
     const expectedErrorMessage = 'identyfikator ma min. 8 znaków';
 
     // Act
-    await page.getByTestId('login-input').fill(incorrectShorterLogin);
-    await page.getByTestId('login-input').blur();
+    const loginPage = new LoginPage(page);
+    await loginPage.loginInput.fill(incorrectShorterLogin);
+    await loginPage.loginInput.blur();
 
     // Assert
-    await expect(page.getByTestId('error-login-id')).toHaveText(
-      expectedErrorMessage,
-    );
+    await expect(loginPage.loginErrorLabel).toHaveText(expectedErrorMessage);
   });
 
   test('unsuccessful login with too short password', async ({ page }) => {
@@ -46,13 +46,12 @@ test.describe('User login to Demobank', () => {
     const tooShortPassword = '12345';
 
     // Act
-    await page.getByTestId('login-input').fill(userId);
-    await page.getByTestId('password-input').fill(tooShortPassword);
-    await page.getByTestId('password-input').blur();
+    const loginPage = new LoginPage(page);
+    await loginPage.loginInput.fill(userId);
+    await loginPage.passwordInput.fill(tooShortPassword);
+    await loginPage.passwordInput.blur();
 
     // Assert
-    await expect(page.getByTestId('error-login-password')).toHaveText(
-      expectedErrorMessage,
-    );
+    await expect(loginPage.passwordErrorLabel).toHaveText(expectedErrorMessage);
   });
 });
